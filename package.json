@@ -1,0 +1,25 @@
+{
+  "name": "dianping-jingyingbao-capture",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal local service for logging into Jingyingbao with Playwright and capturing overview data.",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "node tests/run.js",
+    "build": "pkg src/app.js --targets node18-win-x64 --output dist/经营宝助手.exe --no-bytecode --public-packages \"*\""
+  },
+  "dependencies": {
+    "playwright": "1.59.1"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.19.0"
+  },
+  "pkg": {
+    "assets": [
+      "public/**/*"
+    ],
+    "scripts": [
+      "src/**/*.js"
+    ]
+  }
+}

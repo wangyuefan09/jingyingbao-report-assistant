@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>经营宝抓取与报表生成</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f4ed;
+        --panel: #fffdf8;
+        --text: #1d1d1f;
+        --muted: #6f6a63;
+        --accent: #f46b45;
+        --accent-2: #eea849;
+        --accent-soft: #fff1e7;
+        --border: #e9dcc9;
+        --shadow: rgba(76, 52, 27, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(244, 107, 69, 0.18), transparent 28%),
+          radial-gradient(circle at top right, rgba(238, 168, 73, 0.18), transparent 24%),
+          var(--bg);
+        color: var(--text);
+      }
+
+      main {
+        max-width: 1080px;
+        margin: 40px auto;
+        padding: 0 20px 40px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px var(--shadow);
+        overflow: hidden;
+      }
+
+      .hero {
+        padding: 28px 28px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 28px;
+      }
+
+      p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 14px;
+        padding: 20px 28px 0;
+      }
+
+      label {
+        display: block;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      select {
+        width: 100%;
+        margin-top: 8px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px 14px;
+        font-size: 15px;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.82);
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236f6a63' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        cursor: pointer;
+      }
+
+      input {
+        width: 100%;
+        margin-top: 8px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px 14px;
+        font-size: 15px;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.82);
+      }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        padding: 20px 28px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 13px 20px;
+        color: white;
+        font-size: 15px;
+        cursor: pointer;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      }
+
+      button.secondary {
+        color: var(--text);
+        background: var(--accent-soft);
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.65;
+      }
+
+      .status {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .result {
+        padding: 0 28px 28px;
+      }
+
+      .meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      .meta-card {
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 14px 16px;
+        background: rgba(255, 255, 255, 0.74);
+      }
+
+      .meta-card strong {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      .hint {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: #fff6ef;
+        color: #7a5d45;
+        line-height: 1.6;
+      }
+
+      .hint ul {
+        margin: 10px 0 0;
+        padding-left: 18px;
+      }
+
+      .hint li + li {
+        margin-top: 4px;
+      }
+
+      pre {
+        margin: 20px 0 0;
+        padding: 18px;
+        border-radius: 18px;
+        background: #221d18;
+        color: #f5efe7;
+        overflow: auto;
+        min-height: 320px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        line-height: 1.75;
+      }
+
+      details {
+        margin-top: 18px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.65);
+        overflow: hidden;
+      }
+
+      summary {
+        cursor: pointer;
+        padding: 14px 16px;
+        color: var(--muted);
+      }
+
+      details pre {
+        margin: 0;
+        min-height: auto;
+        border-radius: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel">
+        <div class="hero">
+          <h1>经营宝抓取与报表生成</h1>
+          <p>
+            点击抓取后会启动 Playwright 打开经营宝。你手动扫码登录后，系统会自动抓取
+            <code>/mda/v5/overview</code>，并按你现在日常发送的报表格式生成文案。
+          </p>
+        </div>
+
+        <div class="form">
+          <label>
+            门店账号
+            <select id="accountIdSelect">
+              <option value="">-- 新增门店（扫码登录）--</option>
+            </select>
+          </label>
+          <label>
+            报表日期
+            <select id="reportDateSelect">
+              <option value="yesterday">昨日</option>
+              <option value="today">今日</option>
+              <option value="recent7">近7日</option>
+            </select>
+          </label>
+          <label>
+            顶部备注
+            <input id="noteInput" type="text" placeholder="例如：今天邮件已查看，无违规无异常。" />
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="runButton">打开经营宝并抓取</button>
+          <button id="refreshButton" class="secondary">刷新报表</button>
+          <button id="copyButton" class="secondary" disabled>一键复制报表</button>
+          <span id="status" class="status">等待生成报表</span>
+        </div>
+
+        <div class="result">
+          <div class="meta" id="meta"></div>
+          <div class="hint" id="hint" hidden></div>
+          <pre id="reportOutput">尚未生成报表</pre>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const SETTINGS_KEY = "jingyingbao-report-settings";
+
+      const runButton = document.getElementById("runButton");
+      const refreshButton = document.getElementById("refreshButton");
+      const copyButton = document.getElementById("copyButton");
+      const statusNode = document.getElementById("status");
+      const metaNode = document.getElementById("meta");
+      const hintNode = document.getElementById("hint");
+      const reportOutputNode = document.getElementById("reportOutput");
+      const reportDateSelect = document.getElementById("reportDateSelect");
+      const noteInput = document.getElementById("noteInput");
+      const accountIdSelect = document.getElementById("accountIdSelect");
+
+      let latestReport = null;
+      let accountsList = [];
+
+      function setStatus(message) {
+        statusNode.textContent = message;
+      }
+
+      function getSavedSettings() {
+        try {
+          return JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
+        } catch (_e) {
+          return {};
+        }
+      }
+
+      function saveSettings() {
+        localStorage.setItem(
+          SETTINGS_KEY,
+          JSON.stringify({
+            accountId: accountIdSelect.value,
+            datePreset: reportDateSelect.value,
+            note: noteInput.value,
+          })
+        );
+      }
+
+      /** 从服务端加载账号列表并填充下拉框；selectId 指定要自动选中的账号 */
+      async function loadAccounts(selectId) {
+        try {
+          const res = await fetch("/api/accounts");
+          accountsList = await res.json();
+        } catch (_e) {
+          accountsList = [];
+        }
+
+        // 保留当前选中值（若未指定 selectId）
+        const prev = selectId ?? accountIdSelect.value;
+
+        accountIdSelect.innerHTML = '<option value="">-- 新增门店（扫码登录）--</option>';
+        for (const account of accountsList) {
+          const option = document.createElement("option");
+          option.value = account.id;
+          option.textContent = account.storeName || "未命名门店";
+          accountIdSelect.appendChild(option);
+        }
+
+        if (prev) {
+          accountIdSelect.value = prev;
+        }
+      }
+
+      function formatTime(value) {
+        if (!value) {
+          return "-";
+        }
+
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return value;
+        }
+
+        return date.toLocaleString("zh-CN", { hour12: false });
+      }
+
+      function renderMeta(report) {
+        const items = [
+          ["报表日期", report.dateLabel || "-"],
+          ["最近抓取时间", formatTime(report.capturedAt)],
+        ];
+
+        metaNode.innerHTML = items
+          .map(
+            ([label, value]) => `
+              <div class="meta-card">
+                <strong>${label}</strong>
+                <span>${String(value)}</span>
+              </div>
+            `
+          )
+          .join("");
+      }
+
+      function renderHint(report) {
+        const blocks = [];
+
+        if (!report.hasSource) {
+          blocks.push("当前还没有抓取到本地数据，页面先展示模板占位。");
+        }
+
+        if (Array.isArray(report.supplemental) && report.supplemental.length > 0) {
+          blocks.push(
+            `接口里还能拿到这些补充信息：${report.supplemental
+              .map((item) => `${item.label} ${item.value}`)
+              .join("；")}`
+          );
+        }
+
+        if (blocks.length === 0) {
+          hintNode.hidden = true;
+          hintNode.innerHTML = "";
+          return;
+        }
+
+        hintNode.hidden = false;
+        hintNode.innerHTML = `<div>${blocks.join("<br />")}</div>`;
+      }
+
+      function renderReport(report) {
+        latestReport = report;
+        reportOutputNode.textContent = report.text || "尚未生成报表";
+        copyButton.disabled = !report.text;
+        renderMeta(report);
+        renderHint(report);
+      }
+
+      async function loadLatestReport() {
+        saveSettings();
+        const accountId = accountIdSelect.value;
+        if (!accountId) {
+          // 还没有抓取过任何门店
+          renderReport({ text: "", hasSource: false, missingFields: [], storeName: "" });
+          setStatus("请先选择门店，或点击【打开经营宝并抓取】添加新门店");
+          return null;
+        }
+
+        const params = new URLSearchParams({
+          accountId,
+          datePreset: reportDateSelect.value,
+          note: noteInput.value,
+        });
+
+        const response = await fetch(`/api/latest-report?${params.toString()}`);
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload.error || "生成报表失败");
+        }
+
+        renderReport(payload);
+        return payload;
+      }
+
+      async function refreshReport(statusMessage) {
+        setStatus(statusMessage || "正在生成报表文案");
+        const report = await loadLatestReport();
+        // 每次刷新后重新加载账号列表，让下拉名称同步最新 storeName
+        await loadAccounts(accountIdSelect.value);
+        if (report) {
+          setStatus(report.hasSource ? "报表文案已更新" : "当前暂无抓取数据，已生成模板占位");
+        }
+      }
+
+      runButton.addEventListener("click", async () => {
+        runButton.disabled = true;
+        refreshButton.disabled = true;
+        copyButton.disabled = true;
+        setStatus("浏览器即将打开，请在弹窗中扫码登录");
+        reportOutputNode.textContent = "抓取中，请稍候...";
+
+        try {
+          // 若已选择某个账号，则用该账号的持久 profile 登录（免重新扫码）
+          const accountId = accountIdSelect.value;
+          const url = accountId
+            ? `/api/capture?accountId=${encodeURIComponent(accountId)}`
+            : "/api/capture";
+          const response = await fetch(url, { method: "POST" });
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload.error || "抓取失败");
+          }
+
+          // 刷新账号列表并自动选中刚抓取的账号
+          const capturedAccountId = payload.accountId;
+          await loadAccounts(capturedAccountId);
+
+          await refreshReport("抓取完成，正在生成最终报表");
+        } catch (error) {
+          reportOutputNode.textContent = error.stack || error.message;
+          setStatus("执行失败，请查看错误信息");
+        } finally {
+          runButton.disabled = false;
+          refreshButton.disabled = false;
+        }
+      });
+
+      refreshButton.addEventListener("click", async () => {
+        refreshButton.disabled = true;
+        copyButton.disabled = true;
+
+        try {
+          await refreshReport("正在读取本地最新数据并生成报表");
+        } catch (error) {
+          reportOutputNode.textContent = error.stack || error.message;
+          setStatus("生成失败，请查看错误信息");
+        } finally {
+          refreshButton.disabled = false;
+        }
+      });
+
+      copyButton.addEventListener("click", async () => {
+        if (!latestReport?.text) {
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(latestReport.text);
+          setStatus("报表文案已复制到剪贴板");
+        } catch (error) {
+          setStatus(`复制失败：${error.message}`);
+        }
+      });
+
+      accountIdSelect.addEventListener("change", async () => {
+        saveSettings();
+        await refreshReport("已切换门店，正在读取数据").catch((error) => {
+          reportOutputNode.textContent = error.stack || error.message;
+          setStatus("切换门店失败，请查看错误信息");
+        });
+      });
+
+      reportDateSelect.addEventListener("change", async () => {
+        saveSettings();
+        await refreshReport("已切换报表日期，正在更新报表").catch((error) => {
+          reportOutputNode.textContent = error.stack || error.message;
+          setStatus("更新报表失败，请查看错误信息");
+        });
+      });
+
+      noteInput.addEventListener("change", saveSettings);
+
+      // 初始化：先加载账号列表，再加载报表
+      const savedSettings = getSavedSettings();
+      noteInput.value = savedSettings.note || "今天邮件已查看，无违规无异常。";
+      reportDateSelect.value = savedSettings.datePreset || "yesterday";
+
+      loadAccounts(savedSettings.accountId).then(() => {
+        refreshReport().catch((error) => {
+          reportOutputNode.textContent = error.stack || error.message;
+          setStatus("初始化失败，请查看错误信息");
+        });
+      });
+    </script>
+  </body>
+</html>

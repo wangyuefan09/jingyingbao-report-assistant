@@ -9,6 +9,7 @@ module.exports = [
       const replay = buildReplayRequest({
         overviewUrl: "https://e.dianping.com/mda/v5/overview?foo=bar",
         cookieHeader: "foo=bar; hello=world",
+        now: new Date("2026-05-20T12:00:00+08:00"),
         request: {
           method: "POST",
           postData: "source=1&device=pc&date=2026-05-01%2C2026-05-07&platform=0&shopIds=123",
@@ -24,10 +25,9 @@ module.exports = [
 
       assert.equal(replay.url, "https://e.dianping.com/mda/v5/overview?foo=bar");
       assert.equal(replay.options.method, "POST");
-      // date 字段应收窄为单天范围（最后一天）
       assert.equal(
         replay.options.body,
-        "source=1&device=pc&date=2026-05-07%2C2026-05-07&platform=0&shopIds=123"
+        "source=1&device=pc&date=2026-05-19%2C2026-05-19&platform=0&shopIds=123"
       );
       assert.equal(replay.options.headers.cookie, "foo=bar; hello=world");
       assert.equal(

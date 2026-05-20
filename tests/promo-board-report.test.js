@@ -29,6 +29,7 @@ module.exports = [
     fn() {
       const req = buildPromoBoardReportRequest({
         cookieHeader: "token=abc",
+        now: new Date("2026-05-20T12:00:00+08:00"),
         request: {
           method: "POST",
           postData:
@@ -49,8 +50,8 @@ module.exports = [
       );
       const query = new URL(req.url).searchParams;
       assert.equal(query.get("shopIds"), "1500702739");
-      assert.equal(query.get("beginDate"), "2026-05-10");
-      assert.equal(query.get("endDate"), "2026-05-10");
+      assert.equal(query.get("beginDate"), "2026-05-19");
+      assert.equal(query.get("endDate"), "2026-05-19");
       assert.ok(query.get("tabIds").includes("T30001"));
       assert.equal(req.options.method, "GET");
       assert.equal(req.options.headers.cookie, "token=abc");

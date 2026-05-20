@@ -13,6 +13,7 @@ module.exports = [
         overviewUrl:
           "https://e.dianping.com/mda/v5/overview?yodaReady=h5&csecplatform=4&csecversion=4.2.0&mtgsig=abc123&pageType=v5Home",
         cookieHeader: "foo=bar; hello=world",
+        now: new Date("2026-05-20T12:00:00+08:00"),
         request: {
           method: "POST",
           postData:
@@ -34,7 +35,7 @@ module.exports = [
       assert.equal(replay.options.method, "POST");
       assert.equal(
         replay.options.body,
-        "source=1&device=pc&pageType=flowAnalysis&shopIds=1500702739&platform=0&date=2026-05-06%2C2026-05-06"
+        "source=1&device=pc&pageType=flowAnalysis&shopIds=1500702739&platform=0&date=2026-05-19%2C2026-05-19"
       );
       assert.equal(replay.options.headers.cookie, "foo=bar; hello=world");
       assert.equal(

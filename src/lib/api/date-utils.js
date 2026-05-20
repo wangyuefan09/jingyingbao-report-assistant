@@ -51,11 +51,8 @@ function getYesterdayString(now = new Date()) {
   return formatChinaDate(cst);
 }
 
-/**
- * 优先从 overview postData 提取昨天的日期，提取不到则按北京时间计算。
- */
 function resolveYesterdayDate(postData, now = new Date()) {
-  return getLatestDateFromPostData(postData) || getYesterdayString(now);
+  return getYesterdayString(now);
 }
 
 function getDatePresetLabel(datePreset) {

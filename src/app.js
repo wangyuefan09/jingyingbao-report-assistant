@@ -10,6 +10,7 @@ const { parseOverview } = require("./lib/overview-parser");
 
 const PORT = Number(process.env.PORT || 3000);
 const INDEX_HTML_PATH = path.join(__dirname, "..", "public", "index.html");
+const INLINED_INDEX_HTML = require("./generated/index-html");
 const BASE_DATA_DIR = process.pkg
   ? path.join(path.dirname(process.execPath), "data")
   : path.join(__dirname, "..", "data");
@@ -35,7 +36,7 @@ function writeJson(response, statusCode, payload) {
 }
 
 async function serveIndex(response) {
-  const html = await fs.readFile(INDEX_HTML_PATH, "utf8");
+  const html = INLINED_INDEX_HTML || (await fs.readFile(INDEX_HTML_PATH, "utf8"));
   response.writeHead(200, {
     "Content-Type": "text/html; charset=utf-8",
     "Cache-Control": "no-store",

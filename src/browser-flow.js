@@ -1,5 +1,6 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
+const { spawn } = require("node:child_process");
 
 const { chromium } = require("playwright");
 
@@ -44,6 +45,49 @@ async function renameWithRetry(src, dest, retries = 3, delayMs = 500) {
 
 async function saveJson(filePath, payload) {
   await fs.writeFile(filePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+}
+
+function killChromeByProfileDir(profileDir) {
+  return new Promise((resolve) => {
+    if (process.platform === "win32") {
+      const escaped = profileDir.replace(/\\/g, "\\\\").replace(/'/g, "''");
+      const ps = `Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object { $_.CommandLine -like '*${escaped}*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`;
+      const child = spawn("powershell.exe", ["-NoProfile", "-Command", ps], { windowsHide: true });
+      child.on("exit", () => resolve());
+      child.on("error", () => resolve());
+    } else {
+      const child = spawn("/bin/sh", [
+        "-c",
+        `pgrep -f ${JSON.stringify(profileDir)} | xargs -r kill -9 2>/dev/null || true`,
+      ]);
+      child.on("exit", () => resolve());
+      child.on("error", () => resolve());
+    }
+  });
+}
+
+async function closeContextForcefully(context, profileDir) {
+  const CLOSE_TIMEOUT_MS = 5_000;
+
+  for (const page of context.pages()) {
+    await page.close({ runBeforeUnload: false }).catch(() => {});
+  }
+
+  try {
+    await Promise.race([
+      context.close(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("context.close timeout")), CLOSE_TIMEOUT_MS)
+      ),
+    ]);
+  } catch (error) {
+    console.warn("[browser-flow] context.close 超时或失败:", error.message);
+    try {
+      await context.browser()?.close();
+    } catch (_e) {}
+  }
+
+  await killChromeByProfileDir(profileDir);
 }
 
 async function parseResponseBody(response) {
@@ -432,7 +476,7 @@ async function runBrowserFlow(accountId) {
   } catch (error) {
     throw error;
   } finally {
-    await context.close();
+    await closeContextForcefully(context, launchPaths.profileDir);
 
     if (isNew && realAccountId !== "_new") {
       try {

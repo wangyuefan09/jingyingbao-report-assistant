@@ -21,30 +21,47 @@ module.exports = [
   {
     name: "getDateRangeForPreset resolves today yesterday and recent7 consistently",
     fn() {
-      const now = new Date("2026-05-19T12:00:00+08:00");
+      const now = new Date("2026-05-20T12:00:00+08:00");
       const postData =
         "source=1&device=pc&date=2026-05-01%2C2026-05-07&platform=0&shopIds=123";
 
       assert.deepEqual(getDateRangeForPreset("yesterday", postData, now), {
-        beginDate: "2026-05-07",
-        endDate: "2026-05-07",
-      });
-      assert.deepEqual(getDateRangeForPreset("today", postData, now), {
         beginDate: "2026-05-19",
         endDate: "2026-05-19",
       });
+      assert.deepEqual(getDateRangeForPreset("today", postData, now), {
+        beginDate: "2026-05-20",
+        endDate: "2026-05-20",
+      });
       assert.deepEqual(getDateRangeForPreset("recent7", postData, now), {
-        beginDate: "2026-05-13",
-        endDate: "2026-05-19",
+        beginDate: "2026-05-14",
+        endDate: "2026-05-20",
       });
       assert.equal(getDatePresetLabel("yesterday"), "昨日");
       assert.equal(getDatePresetLabel("today"), "今日");
       assert.equal(getDatePresetLabel("recent7"), "近7日");
-      assert.equal(getDateRangeLabel("yesterday", postData, now), "2026-05-07");
-      assert.equal(getDateRangeLabel("today", postData, now), "2026-05-19");
+      assert.equal(getDateRangeLabel("yesterday", postData, now), "2026-05-19");
+      assert.equal(getDateRangeLabel("today", postData, now), "2026-05-20");
       assert.equal(
         getDateRangeLabel("recent7", postData, now),
-        "2026-05-13 ~ 2026-05-19"
+        "2026-05-14 ~ 2026-05-20"
+      );
+    },
+  },
+  {
+    name: "yesterday ignores stale captured postData date and uses current China date",
+    fn() {
+      const now = new Date("2026-05-20T12:00:00+08:00");
+      const stalePostData =
+        "source=1&device=pc&date=2026-05-07%2C2026-05-13&platform=0&shopIds=123";
+
+      assert.deepEqual(getDateRangeForPreset("yesterday", stalePostData, now), {
+        beginDate: "2026-05-19",
+        endDate: "2026-05-19",
+      });
+      assert.equal(
+        getDateRangeLabel("yesterday", stalePostData, now),
+        "2026-05-19"
       );
     },
   },

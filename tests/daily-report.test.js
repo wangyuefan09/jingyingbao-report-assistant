@@ -148,11 +148,12 @@ module.exports = [
         datePreset: "yesterday",
         dateSourcePostData:
           "source=1&device=pc&date=2026-04-30%2C2026-05-06&platform=0&shopIds=123",
+        now: new Date("2026-05-20T12:00:00+08:00"),
       });
 
       assert.equal(report.storeName, "仟逸轩·轻奢足疗·养生会馆(阎良区店)");
       assert.equal(report.note, "今天邮件已查看，无违规无异常。");
-      assert.equal(report.dateLabel, "2026-05-06");
+      assert.equal(report.dateLabel, "2026-05-19");
       assert.equal(report.values["曝光人数"], "1,184");
       assert.equal(report.values["访问人数"], "151");
       assert.equal(report.values["下单人数"], "11");
@@ -194,7 +195,7 @@ module.exports = [
         report.text,
         [
           "仟逸轩·轻奢足疗·养生会馆(阎良区店)\t今天邮件已查看，无违规无异常。",
-          "数据报表\t2026-05-06",
+          "数据报表\t2026-05-19",
           "【美团点评广告结果数据】",
           "曝光人数：1,184",
           "访问人数：151",

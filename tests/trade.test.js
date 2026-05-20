@@ -10,6 +10,7 @@ module.exports = [
         overviewUrl:
           "https://e.dianping.com/mda/v5/overview?yodaReady=h5&csecplatform=4",
         cookieHeader: "token=abc",
+        now: new Date("2026-05-20T12:00:00+08:00"),
         request: {
           method: "POST",
           postData:
@@ -41,7 +42,7 @@ module.exports = [
       );
       assert.equal(body.get("shopIds"), "1500702739");
       assert.equal(body.get("storeKey"), "231429497");
-      assert.equal(body.get("date"), "2026-05-07,2026-05-07");
+      assert.equal(body.get("date"), "2026-05-19,2026-05-19");
     },
   },
   {

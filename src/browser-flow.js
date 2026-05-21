@@ -6,17 +6,15 @@ const { chromium } = require("playwright");
 
 const { buildCaptureResult } = require("./lib/capture-result");
 const api = require("./lib/api");
+const { getBaseDataDir } = require("./lib/data-dir");
 const { parseOverview } = require("./lib/overview-parser");
 
-const BASE_DATA_DIR = process.pkg
-  ? path.join(path.dirname(process.execPath), "data")
-  : path.join(__dirname, "..", "data");
 const JINGYINGBAO_URL = "https://e.dianping.com/app/merchant-platform";
 const OVERVIEW_WAIT_TIMEOUT_MS = 180_000;
 
 /** 根据 accountId 生成该账号的所有文件路径 */
 function getPaths(accountId) {
-  const dataDir = path.join(BASE_DATA_DIR, accountId);
+  const dataDir = path.join(getBaseDataDir(), accountId);
   const profileDir = path.join(dataDir, "browser-profile");
   return {
     dataDir,

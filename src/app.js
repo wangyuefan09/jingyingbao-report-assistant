@@ -5,15 +5,13 @@ const path = require("node:path");
 const { runCaptureFlow, getPaths } = require("./browser-flow");
 const api = require("./lib/api");
 const { normalizeDatePreset } = require("./lib/api/date-utils");
+const { getBaseDataDir } = require("./lib/data-dir");
 const { buildDailyReport } = require("./lib/daily-report");
 const { parseOverview } = require("./lib/overview-parser");
 
-const PORT = Number(process.env.PORT || 3000);
+const DEFAULT_PORT = Number(process.env.PORT || 3000);
 const INDEX_HTML_PATH = path.join(__dirname, "..", "public", "index.html");
 const INLINED_INDEX_HTML = require("./generated/index-html");
-const BASE_DATA_DIR = process.pkg
-  ? path.join(path.dirname(process.execPath), "data")
-  : path.join(__dirname, "..", "data");
 
 /** accountId 只允许字母数字/连字符/下划线，最长32位，防止路径穿越 */
 const VALID_ACCOUNT_ID = /^[a-zA-Z0-9_-]{1,32}$/;
@@ -229,7 +227,7 @@ async function readStoreName(dataDir) {
 
 /** GET /api/accounts — 列出所有已抓取的门店账号 */
 async function handleAccounts(response) {
-  const dataDir = BASE_DATA_DIR;
+  const dataDir = getBaseDataDir();
   let entries = [];
   try {
     entries = await fs.readdir(dataDir, { withFileTypes: true });
@@ -289,7 +287,7 @@ async function handleCapture(response, searchParams) {
 }
 
 async function handleLatestReport(request, response) {
-  const requestUrl = new URL(request.url, `http://127.0.0.1:${PORT}`);
+  const requestUrl = getRequestUrl(request);
   try {
     const payload = await buildLatestReportPayload(requestUrl.searchParams);
     writeJson(response, 200, payload);
@@ -298,36 +296,96 @@ async function handleLatestReport(request, response) {
   }
 }
 
-const server = http.createServer(async (request, response) => {
-  try {
-    if (request.method === "GET" && request.url === "/") {
-      await serveIndex(response);
-      return;
+function getRequestUrl(request) {
+  const host = request.headers.host || `127.0.0.1:${DEFAULT_PORT}`;
+  return new URL(request.url, `http://${host}`);
+}
+
+function createAppServer() {
+  return http.createServer(async (request, response) => {
+    try {
+      if (request.method === "GET" && request.url === "/") {
+        await serveIndex(response);
+        return;
+      }
+
+      if (request.method === "GET" && request.url === "/api/accounts") {
+        await handleAccounts(response);
+        return;
+      }
+
+      if (request.method === "POST" && request.url.startsWith("/api/capture")) {
+        const requestUrl = getRequestUrl(request);
+        await handleCapture(response, requestUrl.searchParams);
+        return;
+      }
+
+      if (request.method === "GET" && request.url.startsWith("/api/latest-report")) {
+        await handleLatestReport(request, response);
+        return;
+      }
+
+      writeJson(response, 404, { error: "Not found" });
+    } catch (error) {
+      console.error("[server] unhandled error:", error.stack);
+      writeJson(response, 500, { error: error.message });
     }
+  });
+}
 
-    if (request.method === "GET" && request.url === "/api/accounts") {
-      await handleAccounts(response);
-      return;
-    }
+function closeServer(server) {
+  return new Promise((resolve, reject) => {
+    server.close((error) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve();
+    });
+  });
+}
 
-    if (request.method === "POST" && request.url.startsWith("/api/capture")) {
-      const requestUrl = new URL(request.url, `http://127.0.0.1:${PORT}`);
-      await handleCapture(response, requestUrl.searchParams);
-      return;
-    }
+function startServer(options = {}) {
+  const port = options.port ?? DEFAULT_PORT;
+  const host = options.host ?? "127.0.0.1";
+  const shouldLog = options.log !== false;
+  const server = createAppServer();
 
-    if (request.method === "GET" && request.url.startsWith("/api/latest-report")) {
-      await handleLatestReport(request, response);
-      return;
-    }
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, host, () => {
+      server.off("error", reject);
+      const address = server.address();
+      const actualPort = typeof address === "object" && address ? address.port : port;
+      const actualHost = typeof address === "object" && address ? address.address : host;
+      const urlHost = actualHost === "::" ? "127.0.0.1" : actualHost;
+      const url = `http://${urlHost}:${actualPort}`;
 
-    writeJson(response, 404, { error: "Not found" });
-  } catch (error) {
-    console.error("[server] unhandled error:", error.stack);
-    writeJson(response, 500, { error: error.message });
-  }
-});
+      if (shouldLog) {
+        console.log(`Jingyingbao capture service listening on ${url}`);
+      }
 
-server.listen(PORT, () => {
-  console.log(`Jingyingbao capture service listening on http://127.0.0.1:${PORT}`);
-});
+      resolve({
+        server,
+        host: urlHost,
+        port: actualPort,
+        url,
+        close: () => closeServer(server),
+      });
+    });
+  });
+}
+
+if (require.main === module) {
+  startServer().catch((error) => {
+    console.error("[server] failed to start:", error.stack || error.message);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  createAppServer,
+  startServer,
+  validateAccountId,
+  buildLatestReportPayload,
+};

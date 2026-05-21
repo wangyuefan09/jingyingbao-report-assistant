@@ -3,18 +3,28 @@
   "version": "0.1.0",
   "private": true,
   "description": "Minimal local service for logging into Jingyingbao with Playwright and capturing overview data.",
+  "main": "src/electron-main.js",
   "scripts": {
     "start": "node src/app.js",
+    "desktop": "electron .",
+    "desktop:dev": "electron .",
     "test": "node tests/run.js",
-    "build:win": "node scripts/inline-html.js && pkg src/app.js --targets node18-win-x64 --output dist/win/经营宝助手.exe --public --no-bytecode --public-packages \"*\"",
-    "build:mac": "node scripts/inline-html.js && pkg src/app.js --targets node18-macos-arm64 --output dist/mac/经营宝助手 --public --no-bytecode --public-packages \"*\"",
-    "build": "npm run build:win && npm run build:mac"
+    "build:win": "npm run dist:win",
+    "build:mac": "npm run dist:mac:arm64",
+    "build": "npm run dist:win",
+    "dist:win": "electron-builder --win --x64",
+    "dist:mac:arm64": "electron-builder --mac --arm64",
+    "build:server:win": "node scripts/inline-html.js && pkg src/app.js --targets node18-win-x64 --output dist/server/win/jingyingbao-helper.exe --public --no-bytecode --public-packages \"*\"",
+    "build:server:mac": "node scripts/inline-html.js && pkg src/app.js --targets node18-macos-arm64 --output dist/server/mac/jingyingbao-helper --public --no-bytecode --public-packages \"*\"",
+    "build:server": "npm run build:server:win && npm run build:server:mac"
   },
   "dependencies": {
     "playwright": "1.59.1"
   },
   "devDependencies": {
-    "@yao-pkg/pkg": "^6.19.0"
+    "@yao-pkg/pkg": "^6.19.0",
+    "electron": "^42.2.0",
+    "electron-builder": "^26.8.1"
   },
   "pkg": {
     "assets": [
@@ -24,5 +34,35 @@
     "scripts": [
       "src/**/*.js"
     ]
+  },
+  "build": {
+    "appId": "com.local.jingyingbao.helper",
+    "productName": "Jingyingbao Helper",
+    "directories": {
+      "output": "dist/desktop"
+    },
+    "files": [
+      "src/**/*",
+      "public/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "artifactName": "jingyingbao-helper-setup-${version}-${arch}.${ext}"
+    },
+    "portable": {
+      "artifactName": "jingyingbao-helper-portable-${version}-${arch}.${ext}"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "artifactName": "jingyingbao-helper-${version}-${arch}.${ext}"
+    }
   }
 }

@@ -134,11 +134,16 @@ module.exports = [
           "花费(元)": { label: "花费(元)", value: "124.44" },
           "点击均价": { label: "点击均价", value: "1.45" },
           "7日团购订单量": { label: "7日团购订单量", value: "7" },
+          "团购订单量": { label: "团购订单量", value: "11" },
           "查看电话(次)": { label: "查看电话(次)", value: "6" },
           "查看地址(次)": { label: "查看地址(次)", value: "41" },
         },
+        flowWhereaboutsMetrics: {
+          "电话点击": { label: "电话点击", value: "11" },
+          "地址点击": { label: "地址点击", value: "30" },
+        },
         promoCodeMetrics: {
-          "扫码评价数": { label: "扫码评价数", value: "55" },
+          "支付订单": { label: "支付订单", value: "15" },
         },
         adOrderMetrics: {
           "广告单": { label: "广告单", value: "10" },
@@ -162,17 +167,17 @@ module.exports = [
       assert.equal(report.values["核销券数"], "16");
       assert.equal(report.values["下单售价金额"], "5,554");
       assert.equal(report.values["核销售价金额"], "6,808");
-      assert.equal(report.values["电话点击"], "6");
-      assert.equal(report.values["地址点击"], "41");
+      assert.equal(report.values["电话点击"], "11");
+      assert.equal(report.values["地址点击"], "30");
       assert.equal(report.values["在线咨询"], "57");
       assert.equal(report.values["新增收藏"], "2");
       assert.equal(report.values["新增打卡"], "0");
       assert.equal(report.values["新增评价"], "30");
       assert.equal(report.values["推广通消耗"], "124.44");
       assert.equal(report.values["推广通点击单价"], "1.45");
-      assert.equal(report.values["推广通下单量"], "7");
+      assert.equal(report.values["推广通下单量"], "11");
       assert.equal(report.values["推广通余额"], "171.05");
-      assert.equal(report.values["近7天优惠码订单是否达标"], "55（达标）");
+      assert.equal(report.values["近7天优惠码订单是否达标"], "15（达标）");
       assert.equal(report.values["广告单"], "10");
       assert.equal(report.values["留评率（30%达标）"], "272.73%");
       assert.equal(report.values["收藏率（40%达标）"], "18.18%");
@@ -203,8 +208,8 @@ module.exports = [
           "下单券数：13",
           "核销人数：16",
           "核销券数：16",
-          "电话点击：6",
-          "地址点击：41",
+          "电话点击：11",
+          "地址点击：30",
           "在线咨询：57",
           "",
           "【店内干预数据】",
@@ -215,12 +220,12 @@ module.exports = [
           "【推广通数据】",
           "推广通消耗：124.44",
           "推广通点击单价：1.45",
-          "推广通下单量：7",
+          "推广通下单量：11",
           "推广通余额：171.05",
           "",
           "留评率（30%达标）：272.73%",
           "收藏率（40%达标）：18.18%",
-          "近7天优惠码订单是否达标：55（达标）",
+          "近7天优惠码订单是否达标：15（达标）",
           "广告单：10",
           "",
           "下单售价金额：5,554",
@@ -287,7 +292,7 @@ module.exports = [
         promoFinanceMetrics: null,
         promoBoardMetrics: null,
         promoCodeMetrics: {
-          "扫码评价数": { label: "扫码评价数", value: "10" },
+          "支付订单": { label: "支付订单", value: "10" },
         },
         tradeMetrics: null,
         storeName: "",

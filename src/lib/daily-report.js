@@ -56,6 +56,7 @@ function toPromoCodeGoalValue(metricValue) {
 function buildValueMap(
   parsedOverview,
   flowMetrics,
+  flowWhereaboutsMetrics,
   promoFinanceMetrics,
   promoBoardMetrics,
   promoCodeMetrics,
@@ -69,8 +70,16 @@ function buildValueMap(
     "下单券数": toDisplayValue(getMetric(parsedOverview, "sales", "ind_buy_cnt")?.rawValue),
     "核销人数": toDisplayValue(getMetric(parsedOverview, "traffic", "csm_uv")?.rawValue),
     "核销券数": toDisplayValue(getMetric(parsedOverview, "trade", "csm_cnt")?.rawValue),
-    "电话点击": toDisplayValue(promoBoardMetrics?.["查看电话(次)"]?.value ?? null),
-    "地址点击": toDisplayValue(promoBoardMetrics?.["查看地址(次)"]?.value ?? null),
+    "电话点击": toDisplayValue(
+      flowWhereaboutsMetrics?.["电话点击"]?.value ??
+      promoBoardMetrics?.["查看电话(次)"]?.value ??
+      null
+    ),
+    "地址点击": toDisplayValue(
+      flowWhereaboutsMetrics?.["地址点击"]?.value ??
+      promoBoardMetrics?.["查看地址(次)"]?.value ??
+      null
+    ),
     "在线咨询": toDisplayValue(
       getMetric(parsedOverview, "im", "ask_user_cnt")?.rawValue
     ),
@@ -81,10 +90,10 @@ function buildValueMap(
     ),
     "推广通消耗": toDisplayValue(promoBoardMetrics?.["花费(元)"]?.value ?? null),
     "推广通点击单价": toDisplayValue(promoBoardMetrics?.["点击均价"]?.value ?? null),
-    "推广通下单量": toDisplayValue(promoBoardMetrics?.["7日团购订单量"]?.value ?? null),
+    "推广通下单量": toDisplayValue(promoBoardMetrics?.["团购订单量"]?.value ?? null),
     "推广通余额": toDisplayValue(promoFinanceMetrics?.["推广通余额"]?.value ?? null),
     "近7天优惠码订单是否达标": toPromoCodeGoalValue(
-      promoCodeMetrics?.["扫码评价数"]?.value ?? null
+      promoCodeMetrics?.["支付订单"]?.value ?? null
     ),
     "广告单": toDisplayValue(adOrderMetrics?.["广告单"]?.value ?? null),
     "下单售价金额": toDisplayValue(
@@ -160,6 +169,7 @@ function buildText(storeName, note, dateLabel, values) {
 function buildDailyReport({
   parsedOverview,
   flowMetrics,
+  flowWhereaboutsMetrics,
   promoFinanceMetrics,
   promoBoardMetrics,
   promoCodeMetrics,
@@ -177,6 +187,7 @@ function buildDailyReport({
   const values = buildValueMap(
     parsedOverview,
     flowMetrics,
+    flowWhereaboutsMetrics,
     promoFinanceMetrics,
     promoBoardMetrics,
     promoCodeMetrics,
@@ -193,6 +204,7 @@ function buildDailyReport({
     hasSource: Boolean(
       parsedOverview ||
         flowMetrics ||
+        flowWhereaboutsMetrics ||
         promoFinanceMetrics ||
         promoBoardMetrics ||
         promoCodeMetrics ||

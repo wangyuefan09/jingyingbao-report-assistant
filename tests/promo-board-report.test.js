@@ -53,6 +53,7 @@ module.exports = [
       assert.equal(query.get("beginDate"), "2026-05-19");
       assert.equal(query.get("endDate"), "2026-05-19");
       assert.ok(query.get("tabIds").includes("T30001"));
+      assert.ok(query.get("tabIds").includes("T30020"));
       assert.equal(req.options.method, "GET");
       assert.equal(req.options.headers.cookie, "token=abc");
       assert.equal(req.options.headers["x-custom"], "keep");
@@ -90,6 +91,7 @@ module.exports = [
             { id: "T30001", name: "花费", value: "124.44" },
             { id: "T30002", name: "曝光", value: "1,236" },
             { id: "T30004", name: "点击均价", value: "1.45" },
+            { id: "T30020", name: "团购订单量", value: "11" },
             { id: "T310001", name: "7日团购订单量", value: "7" },
             { id: "T30013", name: "查看地址", value: "41" },
             { id: "T30014", name: "查看电话", value: "6" },
@@ -99,7 +101,8 @@ module.exports = [
 
       assert.deepEqual(metrics["花费(元)"], { label: "花费(元)", value: "124.44" });
       assert.deepEqual(metrics["点击均价"], { label: "点击均价", value: "1.45" });
-      assert.deepEqual(metrics["7日团购订单量"], { label: "7日团购订单量", value: "7" });
+      assert.deepEqual(metrics["团购订单量"], { label: "团购订单量", value: "11" });
+      assert.equal(metrics["7日团购订单量"], undefined);
       assert.deepEqual(metrics["查看地址(次)"], { label: "查看地址(次)", value: "41" });
       assert.deepEqual(metrics["查看电话(次)"], { label: "查看电话(次)", value: "6" });
       assert.equal(metrics["曝光"], undefined);

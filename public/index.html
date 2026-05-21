@@ -422,14 +422,6 @@
           blocks.push("当前还没有抓取到本地数据，页面先展示模板占位。");
         }
 
-        if (Array.isArray(report.supplemental) && report.supplemental.length > 0) {
-          blocks.push(
-            `接口里还能拿到这些补充信息：${report.supplemental
-              .map((item) => `${item.label} ${item.value}`)
-              .join("；")}`
-          );
-        }
-
         if (blocks.length === 0) {
           hintNode.hidden = true;
           hintNode.innerHTML = "";

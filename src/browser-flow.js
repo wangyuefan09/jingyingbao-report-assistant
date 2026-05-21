@@ -281,6 +281,15 @@ async function runFetchFlow(accountId) {
   }
 
   try {
+    const req = api.flowWhereabouts.buildRequest({ overviewUrl, cookieHeader, request });
+    const res = await fetch(req.url, req.options);
+    const json = await parseResponseBody(res);
+    captureResult.flowWhereabouts = { ok: res.ok, status: res.status, url: req.url, metrics: api.flowWhereabouts.extractMetrics(json) };
+  } catch (error) {
+    captureResult.flowWhereabouts = { ok: false, status: null, url: null, metrics: {}, error: error.message };
+  }
+
+  try {
     const req = api.promoFinance.buildRequest({ cookieHeader, request });
     const res = await fetch(req.url, req.options);
     const json = await parseResponseBody(res);
@@ -448,6 +457,15 @@ async function runBrowserFlow(accountId) {
       captureResult.flowAnalysis = { ok: res.ok, status: res.status, url: req.url, metrics: api.flowAnalysis.extractMetrics(json) };
     } catch (error) {
       captureResult.flowAnalysis = { ok: false, status: null, url: null, metrics: {}, error: error.message };
+    }
+
+    try {
+      const req = api.flowWhereabouts.buildRequest({ overviewUrl: overviewResponse.url(), cookieHeader: captureResult.cookieHeader, request: captureResult.request });
+      const res = await fetch(req.url, req.options);
+      const json = await parseResponseBody(res);
+      captureResult.flowWhereabouts = { ok: res.ok, status: res.status, url: req.url, metrics: api.flowWhereabouts.extractMetrics(json) };
+    } catch (error) {
+      captureResult.flowWhereabouts = { ok: false, status: null, url: null, metrics: {}, error: error.message };
     }
 
     try {

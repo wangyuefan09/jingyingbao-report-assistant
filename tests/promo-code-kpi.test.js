@@ -7,7 +7,7 @@ const {
 
 module.exports = [
   {
-    name: "buildPromoCodeKpiRequest builds a fixed recent7 request independent of report date preset",
+    name: "buildPromoCodeKpiRequest builds a fixed recent7 promo code KPI request",
     fn() {
       const req = buildPromoCodeKpiRequest({
         overviewUrl:
@@ -48,29 +48,7 @@ module.exports = [
     },
   },
   {
-    name: "extractPromoCodeKpiMetrics finds scan evaluation count from KPI cards",
-    fn() {
-      const metrics = extractPromoCodeKpiMetrics({
-        code: 200,
-        data: {
-          cards: [
-            { title: "扫码人数", value: "117" },
-            { title: "扫码收藏数", value: "0" },
-            { title: "扫码评价数", value: "55" },
-          ],
-        },
-      });
-
-      assert.deepEqual(metrics, {
-        "扫码评价数": {
-          label: "扫码评价数",
-          value: "55",
-        },
-      });
-    },
-  },
-  {
-    name: "extractPromoCodeKpiMetrics reads the real nested promo overview response shape",
+    name: "extractPromoCodeKpiMetrics reads payment order count",
     fn() {
       const metrics = extractPromoCodeKpiMetrics({
         code: 200,
@@ -82,13 +60,13 @@ module.exports = [
                 modelName: "交易",
                 modelDateOverview: [
                   { indicatorName: "支付订单", amount: 13 },
+                  { indicatorName: "支付金额", amount: 2888 },
                 ],
               },
               {
                 modelName: "用户",
                 modelDateOverview: [
                   { indicatorName: "扫码人数", amount: 20 },
-                  { indicatorName: "扫码收藏数", amount: 0 },
                   { indicatorName: "扫码评价数", amount: 9 },
                 ],
               },
@@ -98,11 +76,27 @@ module.exports = [
       });
 
       assert.deepEqual(metrics, {
-        "扫码评价数": {
-          label: "扫码评价数",
-          value: "9",
+        "支付订单": {
+          label: "支付订单",
+          value: "13",
         },
       });
+    },
+  },
+  {
+    name: "extractPromoCodeKpiMetrics ignores scan evaluation count for goal metric",
+    fn() {
+      const metrics = extractPromoCodeKpiMetrics({
+        code: 200,
+        data: {
+          cards: [
+            { title: "扫码人数", value: "117" },
+            { title: "扫码评价数", value: "55" },
+          ],
+        },
+      });
+
+      assert.deepEqual(metrics, {});
     },
   },
 ];

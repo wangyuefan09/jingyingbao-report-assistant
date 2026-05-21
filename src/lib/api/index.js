@@ -30,6 +30,7 @@
 
 const overview = require("./overview");
 const flowAnalysis = require("./flow-analysis");
+const flowWhereabouts = require("./flow-whereabouts");
 const promoFinance = require("./promo-finance");
 const promoBoardReport = require("./promo-board-report");
 const promoCodeKpi = require("./promo-code-kpi");
@@ -43,6 +44,7 @@ const INTERCEPTED_APIS = [overview];
 /** 直接 fetch 类接口列表（按执行顺序） */
 const FETCH_APIS = [
   flowAnalysis,
+  flowWhereabouts,
   promoFinance,
   promoBoardReport,
   promoCodeKpi,
@@ -55,6 +57,7 @@ module.exports = {
   // 按名称访问
   overview,
   flowAnalysis,
+  flowWhereabouts,
   promoFinance,
   promoBoardReport,
   promoCodeKpi,

@@ -2,7 +2,7 @@
 // 类型: 直接 fetch
 // 接口: GET https://e.dianping.com/shopdiy/report/datareport/pc/ajax/getBoardReport
 // 说明: 从经营概览抓取到的 postData 中提取 shopIds，日期收窄为昨天（单天范围）
-// 提取指标: 花费(元)、点击均价、7日团购订单量、查看电话(次)、查看地址(次)
+// 提取指标: 花费(元)、点击均价、团购订单量、查看电话(次)、查看地址(次)
 
 const { getDateRangeForPreset } = require("./date-utils");
 
@@ -11,7 +11,7 @@ const PROMO_BOARD_REPORT_PATH =
 
 const TAB_IDS = [
   "T30001", "T30002", "T30003", "T30004", "T30005", "T30006", "T30007",
-  "T30013", "T30014", "T30012", "T30011", "T310001",
+  "T30013", "T30014", "T30012", "T30011", "T30020",
 ];
 
 /** 判断某个 URL 是否是推广看板报告接口响应（保留供兼容） */
@@ -59,7 +59,7 @@ function buildRequest({ cookieHeader, request, datePreset, now }) {
 const ID_TO_LABEL = {
   T30001:  "花费(元)",
   T30004:  "点击均价",
-  T310001: "7日团购订单量",
+  T30020:  "团购订单量",
   T30013:  "查看地址(次)",
   T30014:  "查看电话(次)",
 };

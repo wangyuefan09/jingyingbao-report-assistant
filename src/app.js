@@ -103,6 +103,7 @@ async function fetchLiveReportData(captureResult, datePreset) {
   const [
     overviewResult,
     flowResult,
+    flowWhereaboutsResult,
     promoFinanceResult,
     promoBoardResult,
     promoCodeResult,
@@ -117,6 +118,10 @@ async function fetchLiveReportData(captureResult, datePreset) {
       fetchApiPayload(
         () => api.flowAnalysis.buildRequest(requestContext),
         api.flowAnalysis.extractMetrics
+      ),
+      fetchApiPayload(
+        () => api.flowWhereabouts.buildRequest(requestContext),
+        api.flowWhereabouts.extractMetrics
       ),
       fetchApiPayload(
         () => api.promoFinance.buildRequest(requestContext),
@@ -143,6 +148,7 @@ async function fetchLiveReportData(captureResult, datePreset) {
   if (
       !overviewResult.ok &&
       !flowResult.ok &&
+      !flowWhereaboutsResult.ok &&
       !promoFinanceResult.ok &&
       !promoBoardResult.ok &&
       !promoCodeResult.ok &&
@@ -155,6 +161,7 @@ async function fetchLiveReportData(captureResult, datePreset) {
   return {
     parsedOverview: overviewResult.ok ? parseOverview(overviewResult.payload) : null,
     flowMetrics: flowResult.metrics ?? null,
+    flowWhereaboutsMetrics: flowWhereaboutsResult.metrics ?? null,
     promoFinanceMetrics: promoFinanceResult.metrics ?? null,
     promoBoardMetrics: promoBoardResult.metrics ?? null,
     promoCodeMetrics: promoCodeResult.metrics ?? null,
@@ -186,6 +193,8 @@ async function buildLatestReportPayload(searchParams) {
   const report = buildDailyReport({
     parsedOverview,
     flowMetrics: liveData?.flowMetrics ?? captureResult?.flowAnalysis?.metrics ?? null,
+    flowWhereaboutsMetrics:
+      liveData?.flowWhereaboutsMetrics ?? captureResult?.flowWhereabouts?.metrics ?? null,
     promoFinanceMetrics:
       liveData?.promoFinanceMetrics ?? captureResult?.promoFinance?.metrics ?? null,
     promoBoardMetrics:

@@ -12,6 +12,7 @@ const suites = [
   "./index-html.test",
   "./date-utils.test",
   "./flow-analysis.test",
+  "./flow-whereabouts.test",
   "./promo-finance.test",
   "./promo-board-report.test",
   "./promo-code-kpi.test",

@@ -2,7 +2,7 @@
 // 类型: 直接 fetch
 // 接口: GET https://e.dianping.com/gateway/qrcode/b/promocode/queryPromoCodeKPIs
 // 说明: 固定获取最近 7 个完整自然日的优惠码指标，不跟页面报表日期切换
-// 提取指标: 扫码评价数
+// 提取指标: 支付订单
 
 function getRecent7Window(now = new Date()) {
   const chinaNow = new Date(now.getTime() + 8 * 60 * 60 * 1000);
@@ -105,10 +105,10 @@ function extractMetrics(payload) {
     }
 
     const label = readMetricLabel(node);
-    if (label === "扫码评价数") {
+    if (label === "支付订单") {
       const value = readPrimitiveValue(node);
       if (value !== null) {
-        metrics["扫码评价数"] = { label: "扫码评价数", value };
+        metrics["支付订单"] = { label: "支付订单", value };
       }
     }
 

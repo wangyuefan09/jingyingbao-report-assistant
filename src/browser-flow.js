@@ -1,6 +1,6 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
-const { spawn } = require("node:child_process");
+const { execFile, spawn } = require("node:child_process");
 
 const { chromium } = require("playwright");
 
@@ -45,14 +45,55 @@ async function saveJson(filePath, payload) {
   await fs.writeFile(filePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
 }
 
-function killChromeByProfileDir(profileDir) {
+function parseTasklistProcessIds(output, imageName) {
+  const normalizedImageName = imageName.toLowerCase();
+
+  return output
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.match(/^"([^"]+)","(\d+)"/))
+    .filter((match) => match && match[1].toLowerCase() === normalizedImageName)
+    .map((match) => Number(match[2]))
+    .filter(Number.isInteger);
+}
+
+function diffProcessIds(beforeIds, afterIds) {
+  const before = new Set(beforeIds);
+  return afterIds.filter((pid) => !before.has(pid));
+}
+
+function getWindowsChromeProcessIds() {
+  return new Promise((resolve) => {
+    execFile(
+      "tasklist.exe",
+      ["/FI", "IMAGENAME eq chrome.exe", "/FO", "CSV", "/NH"],
+      { windowsHide: true },
+      (error, stdout) => {
+        if (error) {
+          resolve([]);
+          return;
+        }
+        resolve(parseTasklistProcessIds(stdout, "chrome.exe"));
+      }
+    );
+  });
+}
+
+function killWindowsProcessTree(pid) {
+  return new Promise((resolve) => {
+    const child = spawn("taskkill.exe", ["/PID", String(pid), "/T", "/F"], {
+      windowsHide: true,
+    });
+    child.on("exit", () => resolve());
+    child.on("error", () => resolve());
+  });
+}
+
+function killChromeByProfileDir(profileDir, chromeProcessIds = []) {
   return new Promise((resolve) => {
     if (process.platform === "win32") {
-      const escaped = profileDir.replace(/\\/g, "\\\\").replace(/'/g, "''");
-      const ps = `Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object { $_.CommandLine -like '*${escaped}*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`;
-      const child = spawn("powershell.exe", ["-NoProfile", "-Command", ps], { windowsHide: true });
-      child.on("exit", () => resolve());
-      child.on("error", () => resolve());
+      Promise.all(chromeProcessIds.map((pid) => killWindowsProcessTree(pid))).then(resolve);
     } else {
       const child = spawn("/bin/sh", [
         "-c",
@@ -64,7 +105,7 @@ function killChromeByProfileDir(profileDir) {
   });
 }
 
-async function closeContextForcefully(context, profileDir) {
+async function closeContextForcefully(context, profileDir, chromeProcessIds = []) {
   const CLOSE_TIMEOUT_MS = 5_000;
 
   for (const page of context.pages()) {
@@ -85,7 +126,7 @@ async function closeContextForcefully(context, profileDir) {
     } catch (_e) {}
   }
 
-  await killChromeByProfileDir(profileDir);
+  await killChromeByProfileDir(profileDir, chromeProcessIds);
 }
 
 async function parseResponseBody(response) {
@@ -321,12 +362,18 @@ async function runBrowserFlow(accountId) {
 
   let paths = launchPaths;
   let realAccountId = launchAccountId;
+  const chromeProcessIdsBeforeLaunch =
+    process.platform === "win32" ? await getWindowsChromeProcessIds() : [];
 
   const context = await chromium.launchPersistentContext(launchPaths.profileDir, {
     channel: "chrome",
     headless: false,
     viewport: null,
   });
+  const launchedChromeProcessIds =
+    process.platform === "win32"
+      ? diffProcessIds(chromeProcessIdsBeforeLaunch, await getWindowsChromeProcessIds())
+      : [];
 
   try {
     const page = context.pages()[0] || (await context.newPage());
@@ -474,7 +521,7 @@ async function runBrowserFlow(accountId) {
   } catch (error) {
     throw error;
   } finally {
-    await closeContextForcefully(context, launchPaths.profileDir);
+    await closeContextForcefully(context, launchPaths.profileDir, launchedChromeProcessIds);
 
     if (isNew && realAccountId !== "_new") {
       try {
@@ -494,4 +541,6 @@ async function runBrowserFlow(accountId) {
 module.exports = {
   runCaptureFlow,
   getPaths,
+  diffProcessIds,
+  parseTasklistProcessIds,
 };

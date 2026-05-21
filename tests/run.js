@@ -4,6 +4,7 @@ const suites = [
   "./data-dir.test",
   "./app-server.test",
   "./electron-desktop.test",
+  "./browser-close.test",
   "./replay-request.test",
   "./overview-locators.test",
   "./merchant-platform.test",

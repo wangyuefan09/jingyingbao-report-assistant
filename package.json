@@ -13,7 +13,7 @@
     "build:mac": "npm run dist:mac:arm64",
     "build": "npm run dist:win",
     "dist:win": "electron-builder --win --x64",
-    "dist:mac:arm64": "electron-builder --mac --arm64",
+    "dist:mac:arm64": "node scripts/build-mac.js",
     "build:server:win": "node scripts/inline-html.js && pkg src/app.js --targets node18-win-x64 --output dist/server/win/jingyingbao-helper.exe --public --no-bytecode --public-packages \"*\"",
     "build:server:mac": "node scripts/inline-html.js && pkg src/app.js --targets node18-macos-arm64 --output dist/server/mac/jingyingbao-helper --public --no-bytecode --public-packages \"*\"",
     "build:server": "npm run build:server:win && npm run build:server:mac"
@@ -40,6 +40,9 @@
     "productName": "Jingyingbao Helper",
     "directories": {
       "output": "dist/desktop"
+    },
+    "electronDownload": {
+      "mirror": "https://npmmirror.com/mirrors/electron/"
     },
     "files": [
       "src/**/*",

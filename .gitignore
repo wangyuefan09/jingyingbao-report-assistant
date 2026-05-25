@@ -1,5 +1,7 @@
 node_modules/
+.DS_Store
 .npm-cache/
+.cache/
 data/
 .codex-temp/
 npm-cache/
